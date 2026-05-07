@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Order, SERVICE_OPTIONS } from "@/lib/types";
-import { formatCurrency, formatDate } from "@/lib/storage";
+import { Order } from "@/lib/types";
+import { formatCurrency, formatDate, getServiceOptions } from "@/lib/storage";
 
 interface ReceiptProps {
   order: Order;
@@ -13,95 +13,87 @@ interface ReceiptProps {
 
 export default function Receipt({
   order,
-  outletName = "UNGU LAUNDRY",
-  outletAddress = "Jl. Merdeka No. 123, Jakarta",
-  outletPhone = "0812-3456-7890",
+  outletName = "Ungu Setrika Dan Laundry",
+  outletAddress = "Bandung",
+  outletPhone = "083823223372",
 }: ReceiptProps) {
   return (
-    <div className="receipt-container" id={`receipt-${order.id}`}>
+    <div className="receipt-container p-4 bg-white text-gray-800 font-mono text-[11px]" id={`receipt-${order.id}`} style={{ width: "300px", margin: "0 auto" }}>
       {/* Header */}
-      <div className="receipt-header text-center pb-3 border-b border-dashed border-gray-300">
-        <h2 className="text-base font-bold tracking-wide text-gray-900">{outletName}</h2>
-        <p className="text-[11px] text-gray-500 mt-0.5">{outletAddress}</p>
-        <p className="text-[11px] text-gray-500">Telp: {outletPhone}</p>
+      <div className="text-center mb-4">
+        <h2 className="text-sm font-bold uppercase">{outletName}</h2>
+        <p>{outletAddress}</p>
+        <p>{outletPhone}</p>
       </div>
 
-      <hr className="receipt-divider my-2.5 border-gray-200 border-dashed" />
-
-      {/* Receipt Info */}
-      <div className="space-y-1 text-xs">
-        <div className="flex justify-between"><span className="text-gray-500">No. Struk:</span><span className="font-mono font-semibold text-primary-700">{order.receiptNumber}</span></div>
-        <div className="flex justify-between"><span className="text-gray-500">Tanggal:</span><span>{formatDate(order.createdAt)}</span></div>
-        <div className="flex justify-between"><span className="text-gray-500">Est. Selesai:</span><span className="text-green-700">{formatDate(order.estimatedDone)}</span></div>
+      {/* Order Info */}
+      <div className="space-y-0.5 mb-2">
+        <p className="font-bold">{order.receiptNumber}</p>
+        <div className="flex justify-between"><span>Kasir</span><span>: {order.createdBy || "Manajer"}</span></div>
+        <div className="flex justify-between"><span>Pelanggan</span><span>: {order.customer.name}</span></div>
+        <div className="flex justify-between"><span>No Handphone</span><span>: {order.customer.phone}</span></div>
+        <div className="flex justify-between"><span>Alamat</span><span className="text-right truncate ml-2">: {order.customer.address || "-"}</span></div>
+        <div className="flex justify-between"><span>Masuk</span><span>: {formatDate(order.createdAt)}</span></div>
+        <div className="flex justify-between font-bold"><span>Est Selesai</span><span>: {formatDate(order.estimatedDone)}</span></div>
       </div>
 
-      <hr className="receipt-divider my-2.5 border-gray-200 border-dashed" />
-
-      {/* Customer */}
-      <div className="space-y-1 text-xs">
-        <div className="flex justify-between"><span className="text-gray-500">Pelanggan:</span><span className="font-semibold">{order.customer.name}</span></div>
-        <div className="flex justify-between"><span className="text-gray-500">Telepon:</span><span>{order.customer.phone}</span></div>
-        {order.customer.address && (
-          <div className="flex justify-between"><span className="text-gray-500">Alamat:</span><span className="text-right max-w-[60%]">{order.customer.address}</span></div>
-        )}
+      <p className="text-center mb-1">----------------------------------------</p>
+      <p className="font-bold mb-1 uppercase text-center">Layanan</p>
+      <div className="space-y-1 mb-2">
+        {order.items.map((item, idx) => {
+          const pl = getServiceOptions();
+          const label = pl[item.service]?.label ?? item.service.replace(/_/g, " ");
+          return (
+            <div key={idx}>
+              <p className="font-bold">{label}</p>
+              <div className="flex justify-between">
+                <span>{item.weight} kg x {formatCurrency(item.pricePerKg)}</span>
+                <span>{formatCurrency(item.subtotal)}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <hr className="receipt-divider my-2.5 border-gray-200 border-dashed" />
+      <p className="text-center mb-1">----------------------------------------</p>
+      <div className="space-y-0.5 mb-2">
+        <div className="flex justify-between"><span>Catatan</span><span>: {order.notes || "-"}</span></div>
+        <div className="flex justify-between"><span>Parfum</span><span>: Sakura</span></div>
+        <div className="flex justify-between"><span>Antar-Jemput</span><span>: Ya</span></div>
+      </div>
 
-      {/* Items */}
-      <table className="receipt-table w-full text-xs">
-        <thead>
-          <tr className="border-b border-gray-200">
-            <th className="text-left py-1 text-gray-500 font-medium">Layanan</th>
-            <th className="text-center py-1 text-gray-500 font-medium">Kg</th>
-            <th className="text-right py-1 text-gray-500 font-medium">Harga</th>
-            <th className="text-right py-1 text-gray-500 font-medium price-col">Subtotal</th>
-          </tr>
-        </thead>
-        <tbody>
-          {order.items.map((item, idx) => {
-            const svc = SERVICE_OPTIONS[item.service];
-            return (
-              <tr key={idx} className="border-b border-gray-100">
-                <td className="py-1.5">{svc.label}</td>
-                <td className="text-center py-1.5">{item.weight}</td>
-                <td className="text-right py-1.5 text-gray-500">{formatCurrency(item.pricePerKg)}</td>
-                <td className="text-right py-1.5 font-medium price-col">{formatCurrency(item.subtotal)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <p className="text-center mb-1">----------------------------------------</p>
+      <div className="space-y-0.5 mb-2">
+        <div className="flex justify-between"><span>Total Layanan</span><span>: {formatCurrency(order.totalPrice)}</span></div>
+        <div className="flex justify-between"><span>Antar-Jemput</span><span>: Rp 0</span></div>
+      </div>
 
-      <hr className="receipt-divider my-2.5 border-gray-200 border-dashed" />
-
-      {/* Totals */}
-      <div className="space-y-1.5 text-xs">
-        <div className="flex justify-between"><span className="text-gray-500">Total Berat:</span><span className="font-semibold">{order.totalWeight} kg</span></div>
-        <div className="flex justify-between"><span className="text-gray-500">Subtotal:</span><span>{formatCurrency(order.totalPrice)}</span></div>
-        {order.discount > 0 && (
-          <div className="flex justify-between text-green-700"><span>Diskon Loyalty:</span><span>-{formatCurrency(order.discount)}</span></div>
-        )}
-        <div className="receipt-total flex justify-between text-sm font-bold pt-2 border-t-2 border-gray-800">
-          <span>TOTAL:</span>
-          <span className="text-primary-700">{formatCurrency(order.finalPrice)}</span>
+      <p className="text-center mb-1">----------------------------------------</p>
+      <p className="font-bold mb-1 uppercase text-center">Pembayaran</p>
+      <div className="space-y-0.5 mb-3">
+        <div className="flex justify-between text-sm font-bold">
+          <span>Harga Akhir</span>
+          <span>: {formatCurrency(order.finalPrice)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Status</span>
+          <span className="font-bold">: {order.paymentStatus === "paid" ? "Lunas" : "Belum Bayar"}</span>
         </div>
       </div>
 
-      <hr className="receipt-divider my-2.5 border-gray-200 border-dashed" />
-
-      {/* Payment Info */}
-      <div className="receipt-payment text-xs space-y-1">
-        <p className="font-semibold text-gray-800">Pembayaran Transfer:</p>
-        <p className="text-gray-600">Dana: 083823223372</p>
-        <p className="text-gray-600">BCA: 4373160311</p>
+      <div className="mt-4 pt-4 border-t border-dashed border-gray-300">
+        <p className="font-bold mb-1">KETENTUAN</p>
+        <ol className="list-decimal pl-4 space-y-1 text-[9px] text-gray-600 leading-tight">
+          <li>Pengaduan Komplain max 1x24 jam.</li>
+          <li>Kerusakan luntur, susut dan berkerut akibat proses pencucian bukan tanggung jawab kami.</li>
+          <li>Jumlah pakaian yang tidak dihitung oleh pelanggan bukan tanggung jawab kami dan hitungan kami yang di anggap benar.</li>
+          <li>Kami tidak bertanggung jawab apabila terjadi keadaan memaksa/Force Majeur (Banjir,Kebakaran,Gempa Bumi,dan Huru Hara).</li>
+        </ol>
       </div>
 
-      {/* Footer */}
-      <div className="receipt-footer text-center pt-2.5 mt-2.5 border-t border-dashed border-gray-300">
-        <p className="text-[10px] text-gray-500">Terima kasih atas kepercayaan Anda.</p>
-        <p className="text-[10px] text-gray-400 mt-0.5">Simpan struk ini sebagai bukti pengambilan.</p>
-        {order.notes && <p className="text-[10px] text-gray-500 mt-1.5 italic">Catatan: {order.notes}</p>}
+      <div className="mt-6 text-center text-[9px] text-gray-400">
+        <p>*** TERIMA KASIH ***</p>
+        <p>Ungu Laundry - Professional Care</p>
       </div>
     </div>
   );

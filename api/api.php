@@ -143,6 +143,16 @@ function initTables($db) {
             notes TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+        CREATE TABLE IF NOT EXISTS users (
+            username VARCHAR(50) PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            display_name VARCHAR(255),
+            role VARCHAR(20) DEFAULT 'user',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
 }
 
@@ -327,6 +337,54 @@ switch ($action) {
             respond(true, ['message' => 'Status updated']);
         } catch (Exception $e) {
             respond(false, null, 'Update failed: ' . $e->getMessage());
+        }
+        break;
+
+    // ---------- Auth: Login ----------
+    case 'login':
+        if (!$data || !isset($data['username'], $data['password'])) {
+            respond(false, null, 'Username and password required.');
+        }
+        $stmt = $db->prepare("SELECT * FROM users WHERE username = :u OR email = :u");
+        $stmt->execute([':u' => $data['username']]);
+        $user = $stmt->fetch();
+
+        if ($user && $data['password'] === $user['password']) { // In production use password_verify
+            unset($user['password']); // Don't send password back
+            respond(true, $user);
+        } else {
+            respond(false, null, 'Username atau password salah.');
+        }
+        break;
+
+    // ---------- Auth: Register ----------
+    case 'register':
+        if (!$data || !isset($data['username'], $data['email'], $data['password'], $data['display_name'])) {
+            respond(false, null, 'Semua data wajib diisi.');
+        }
+
+        // Check if exists
+        $stmt = $db->prepare("SELECT COUNT(*) FROM users WHERE username = :u OR email = :e");
+        $stmt->execute([':u' => $data['username'], ':e' => $data['email']]);
+        if ($stmt->fetchColumn() > 0) {
+            respond(false, null, 'Username atau email sudah digunakan.');
+        }
+
+        try {
+            $stmt = $db->prepare("
+                INSERT INTO users (username, email, password, display_name, role)
+                VALUES (:u, :e, :p, :d, :r)
+            ");
+            $stmt->execute([
+                ':u' => $data['username'],
+                ':e' => $data['email'],
+                ':p' => $data['password'], // In production use password_hash
+                ':d' => $data['display_name'],
+                ':r' => 'user'
+            ]);
+            respond(true, ['message' => 'Registrasi berhasil']);
+        } catch (Exception $e) {
+            respond(false, null, 'Gagal mendaftar: ' . $e->getMessage());
         }
         break;
 

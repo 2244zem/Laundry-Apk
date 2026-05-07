@@ -14,24 +14,27 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const user = login(username.trim().toLowerCase(), password);
+    try {
+      const user = await login(username.trim().toLowerCase(), password);
       if (user) {
         onLogin(user);
       } else {
         setError("Username atau password salah.");
       }
+    } catch (err) {
+      setError("Terjadi kesalahan koneksi.");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)" }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "linear-gradient(135deg, #4C1D95 0%, #7c3aed 100%)" }}>
       <div className="w-full max-w-sm animate-scale-in">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -81,15 +84,9 @@ export default function LoginForm({ onLogin }: LoginFormProps) {
           <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
             {loading ? "Memproses..." : "Masuk"}
           </button>
-
-          <div className="text-center pt-2 border-t border-gray-100">
-            <p className="text-[11px] text-gray-400 leading-relaxed">
-              Admin: admin / admin123<br />
-              Kasir: kasir / kasir123
-            </p>
-          </div>
         </form>
       </div>
     </div>
   );
 }
+

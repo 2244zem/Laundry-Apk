@@ -2,260 +2,200 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ============================================
-   Base
-   ============================================ */
-* { box-sizing: border-box; }
+/* ─── Design Tokens ─────────────────────────────────────── */
+:root {
+  --primary: #7C3AED;
+  --primary-light: #A78BFA;
+  --primary-50: #F5F3FF;
+  --bg: #F8F7FC;
+  --surface: #FFFFFF;
+  --text: #1F2937;
+  --text-muted: #6B7280;
+  --border: #E5E7EB;
+  --radius: 16px;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+[data-theme='dark'] {
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border: #334155;
+  --primary-50: #1E1B4B;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
 
 body {
-  font-family: "Inter", system-ui, sans-serif;
-  background: #f8f7fc;
-  min-height: 100vh;
-  color: #1e1b4b;
-  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
 }
 
-/* ============================================
-   Cards
-   ============================================ */
 .card {
-  background: #ffffff;
-  border: 1px solid #ede9fe;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.04);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: var(--shadow);
 }
 
-.card:hover {
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.08);
-  border-color: #ddd6fe;
-}
-
-.card-muted {
-  background: #faf9fe;
-  border: 1px solid #ede9fe;
-  border-radius: 12px;
-}
-
-/* ============================================
-   Scrollbar
-   ============================================ */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #ddd6fe; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #c4b5fd; }
-
-/* ============================================
-   Inputs
-   ============================================ */
 .input-field {
-  @apply w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200;
-  background: #ffffff;
-  border: 1px solid #e5e1f0;
-  color: #1e1b4b;
+  background-color: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
-.input-field:focus {
-  outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+.text-muted { color: var(--text-muted) !important; }
+.bg-card { background-color: var(--surface) !important; }
+.border-base { border-color: var(--border) !important; }
+
+/* Overriding common utility classes for dark mode */
+[data-theme='dark'] .bg-white { background-color: var(--surface) !important; }
+[data-theme='dark'] .text-gray-800 { color: var(--text) !important; }
+[data-theme='dark'] .text-gray-900 { color: var(--text) !important; }
+[data-theme='dark'] .text-gray-700 { color: var(--text) !important; }
+[data-theme='dark'] .text-gray-600 { color: var(--text-muted) !important; }
+[data-theme='dark'] .text-gray-500 { color: var(--text-muted) !important; }
+[data-theme='dark'] .text-gray-400 { color: var(--text-muted) !important; }
+[data-theme='dark'] .border-gray-100 { border-color: var(--border) !important; }
+[data-theme='dark'] .border-gray-200 { border-color: var(--border) !important; }
+[data-theme='dark'] .border-gray-300 { border-color: var(--border) !important; }
+[data-theme='dark'] .bg-gray-50 { background-color: var(--bg) !important; }
+[data-theme='dark'] .bg-gray-100 { background-color: var(--bg) !important; }
+[data-theme='dark'] .bg-gray-200 { background-color: var(--border) !important; }
+
+
+.card-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border-left: 3px solid var(--primary);
+  transition: background 0.3s ease;
 }
 
-.input-field::placeholder { color: #a5a0c0; }
-
-/* ============================================
-   Buttons
-   ============================================ */
+/* ─── Buttons ───────────────────────────────────────────── */
 .btn-primary {
-  @apply px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
-  background: #7c3aed;
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
   border: none;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+  letter-spacing: 0.01em;
 }
-
-.btn-primary:hover {
-  background: #6d28d9;
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(124,58,237,0.3);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
 }
 
-.btn-primary:active { transform: translateY(0); }
-
-.btn-success {
-  @apply px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
-  background: #059669;
-  color: #ffffff;
-  border: none;
-}
-
-.btn-success:hover {
-  background: #047857;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
-}
-
-.btn-warning {
-  @apply px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
-  background: #d97706;
-  color: #ffffff;
-  border: none;
-}
-
-.btn-warning:hover { background: #b45309; }
-
-.btn-ghost {
-  @apply px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200;
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: transparent;
-  color: #6d28d9;
-  border: 1px solid #ede9fe;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover { background: var(--primary-50); }
+
+.input-field {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.2s ease;
+}
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(124,58,237,0.1);
 }
 
-.btn-ghost:hover {
-  background: #f5f3ff;
-  border-color: #ddd6fe;
+/* ─── Status Chips ──────────────────────────────────────── */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
-.btn-danger {
-  @apply px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+/* ─── Animation ─────────────────────────────────────────── */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ─── Custom Charts ─────────────────────────────────────── */
+.chart-bar {
+  background: var(--primary);
+  border-radius: 4px 4px 0 0;
+  transition: height 1s ease-out;
+  position: relative;
+}
+.chart-bar:hover { filter: brightness(1.2); }
+
+/* ─── Layout ────────────────────────────────────────────── */
+.main-content {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.btn-danger:hover {
-  background: #fee2e2;
+@media (max-width: 640px) {
+  .main-content { padding: 16px; }
 }
 
-.btn-whatsapp {
-  @apply px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200;
-  background: #25d366;
-  color: #ffffff;
-  border: none;
+.table-base {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-base th {
+  text-align: left;
+  padding: 12px;
+  background: var(--primary-50);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.table-base td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
 }
 
-.btn-whatsapp:hover {
-  background: #1da851;
-  transform: translateY(-1px);
-}
-
-/* ============================================
-   Tabs
-   ============================================ */
-.tab-btn {
-  @apply relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200;
-  color: #6b6394;
-}
-
-.tab-btn:hover { color: #4c1d95; background: #f5f3ff; }
-
-.tab-btn.active {
-  color: #ffffff;
-  background: #7c3aed;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
-}
-
-/* ============================================
-   Stat Card Accent
-   ============================================ */
-.stat-accent {
-  border-left: 3px solid #7c3aed;
-}
-
-/* ============================================
-   Print — Thermal Receipt 58mm/80mm
-   ============================================ */
-@media print {
-  @page { size: 80mm auto; margin: 2mm; }
-
-  * {
-    color: #000 !important;
-    background: white !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    border-color: #000 !important;
-  }
-
-  body {
-    background: white !important;
-    font-family: "Courier New", monospace !important;
-    font-size: 11px !important;
-    line-height: 1.3 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  .no-print, nav, header, .sidebar, .tab-bar, .dashboard-header, .action-buttons,
-  button:not(.print-keep) { display: none !important; }
-
-  .print-only { display: block !important; }
-
-  .receipt-container {
-    display: block !important;
-    width: 100% !important;
-    max-width: 80mm !important;
-    margin: 0 !important;
-    padding: 2mm !important;
-    border: none !important;
-    background: white !important;
-    page-break-inside: avoid;
-  }
-
-  .receipt-container * { font-family: "Courier New", monospace !important; }
-
-  .receipt-header {
-    text-align: center !important;
-    border-bottom: 1px dashed #000 !important;
-    padding-bottom: 4px !important;
-    margin-bottom: 4px !important;
-  }
-
-  .receipt-header h2 { font-size: 14px !important; font-weight: bold !important; margin: 0 !important; }
-  .receipt-header p { font-size: 10px !important; margin: 1px 0 !important; }
-
-  .receipt-divider { border: none !important; border-top: 1px dashed #000 !important; margin: 4px 0 !important; }
-
-  .receipt-table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
-  .receipt-table td { padding: 2px 0 !important; vertical-align: top !important; }
-  .receipt-table .price-col { text-align: right !important; white-space: nowrap !important; }
-
-  .receipt-total {
-    font-size: 13px !important; font-weight: bold !important; text-align: right !important;
-    border-top: 2px solid #000 !important; padding-top: 4px !important; margin-top: 4px !important;
-  }
-
-  .receipt-footer {
-    text-align: center !important; font-size: 9px !important;
-    margin-top: 8px !important; padding-top: 4px !important;
-    border-top: 1px dashed #000 !important;
-  }
-
-  .receipt-payment { font-size: 10px !important; margin: 4px 0 !important; }
-}
-
-/* ============================================
-   Responsive
-   ============================================ */
-@media (max-width: 768px) {
-  .card { border-radius: 12px; }
-  .tab-btn { @apply px-3 py-2 text-xs; }
-}
-
-/* ============================================
-   Toast
-   ============================================ */
-.toast {
+.toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 9999;
-  animation: slideUp 0.35s ease-out;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
-
-.toast-content {
-  @apply px-5 py-3.5 rounded-xl text-sm font-medium;
-  background: #1e1b4b;
-  color: #ffffff;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+.toast {
+  background: #1F2937;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 99px;
+  font-size: 0.875rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease-out;
 }
