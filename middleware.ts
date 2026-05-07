@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   let role: string | null = null;
   if (session) {
     try {
-      const decoded = JSON.parse(atob(session));
+      const decoded = JSON.parse(decodeURIComponent(atob(session)));
       role = decoded.role ?? null;
     } catch {
       role = null;

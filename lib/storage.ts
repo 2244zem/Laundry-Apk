@@ -88,32 +88,10 @@ function setItem<T>(key: string, value: T): void {
 
 // ---------- Auth (Cookie + localStorage) ----------
 
-export async function login(username: string, password: string): Promise<AppUser | null> {
-  // Try PHP Backend first
-  try {
-    const res = await fetchWithTimeout("/api/api.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "login", data: { username, password } }),
-      timeout: 2000,
-    });
-    const result = await res.json();
-    if (result.success) {
-      const user: AppUser = { 
-        username: result.data.username, 
-        role: result.data.role, 
-        displayName: result.data.display_name 
-      };
-      setItem(KEYS.AUTH, user);
-      const payload = btoa(JSON.stringify({ username: user.username, role: user.role }));
-      document.cookie = `laundry_session=${payload}; path=/; max-age=86400; SameSite=Strict`;
-      return user;
-    }
-  } catch (e) {
-    console.warn("Backend login failed, falling back to local storage.", e);
-  }
+// ---------- Auth (Cookie + localStorage) ----------
 
-  // Fallback to local/static users
+export async function login(username: string, password: string): Promise<AppUser | null> {
+  // Local persistence only for stability on Vercel/Static hosting
   const entry = USERS[username];
   const dynamicUsers = getItem<Record<string, any>>(KEYS.USERS_DB, {});
   const userEntry = entry || dynamicUsers[username];
@@ -122,36 +100,49 @@ export async function login(username: string, password: string): Promise<AppUser
   
   const user: AppUser = { username, role: userEntry.role, displayName: userEntry.displayName };
   setItem(KEYS.AUTH, user);
-  const payload = btoa(JSON.stringify({ username, role: userEntry.role }));
-  document.cookie = `laundry_session=${payload}; path=/; max-age=86400; SameSite=Strict`;
+  
+  // Safe Base64 encoding for cookie
+  try {
+    const payload = btoa(encodeURIComponent(JSON.stringify({ username, role: userEntry.role })));
+    document.cookie = `laundry_session=${payload}; path=/; max-age=86400; SameSite=Strict`;
+  } catch (e) {
+    console.error("Cookie setting error:", e);
+  }
+  
   return user;
 }
 
 export async function register(username: string, email: string, password: string, displayName: string): Promise<{ success: boolean; error?: string }> {
-  // Try PHP Backend
   try {
-    const res = await fetchWithTimeout("/api/api.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "register", data: { username, email, password, display_name: displayName } }),
-      timeout: 2000,
-    });
-    const result = await res.json();
-    if (result.success) return { success: true };
-    return { success: false, error: result.error };
+    const dynamicUsers = getItem<Record<string, any>>(KEYS.USERS_DB, {});
+    
+    // Check if user already exists
+    if (USERS[username] || dynamicUsers[username]) {
+      return { success: false, error: "Username sudah digunakan." };
+    }
+    
+    const emailExists = Object.values(dynamicUsers).some((u: any) => u.email === email);
+    if (emailExists) {
+      return { success: false, error: "Email sudah terdaftar." };
+    }
+
+    // Save new user
+    dynamicUsers[username] = { 
+      password, 
+      role: "user", 
+      displayName, 
+      email, 
+      createdAt: new Date().toISOString() 
+    };
+    
+    setItem(KEYS.USERS_DB, dynamicUsers);
+    return { success: true };
   } catch (e) {
-    console.warn("Backend register failed, falling back to local storage.", e);
+    console.error("Register error:", e);
+    return { success: false, error: "Terjadi kesalahan saat menyimpan data." };
   }
-
-  const dynamicUsers = getItem<Record<string, any>>(KEYS.USERS_DB, {});
-  if (USERS[username] || dynamicUsers[username]) return { success: false, error: "Username sudah digunakan." };
-  const emailExists = Object.values(dynamicUsers).some((u: any) => u.email === email);
-  if (emailExists) return { success: false, error: "Email sudah terdaftar." };
-
-  dynamicUsers[username] = { password, role: "user", displayName, email, createdAt: new Date().toISOString() };
-  setItem(KEYS.USERS_DB, dynamicUsers);
-  return { success: true };
 }
+
 
 export function logout(): void {
   if (typeof window === "undefined") return;
